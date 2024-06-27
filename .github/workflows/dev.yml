@@ -67,7 +67,7 @@ jobs:
           chmod 400 SERVER-KEY-PAIR.pem
 
       - name: Upload artifacts to the server using rsync
-        run: rsync -avL --progress -e "ssh -i SERVER-KEY-PAIR.pem" *.jar azureuser@${{secrets.DEV_HOST}}:/home/azureuser/app/latest/
+        run: rsync -avL --progress -e "ssh -i SERVER-KEY-PAIR.pem" *.war azureuser@${{secrets.DEV_HOST}}:/home/azureuser/app/latest/
 
       - name: Clean generated files
         if: success() || failure()
