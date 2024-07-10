@@ -36,6 +36,8 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Staff;
+import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSessionEvent;
@@ -86,6 +89,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     PersonFacade personFacade;
     @EJB
+    StaffFacade staffFacade;
+    @EJB
     WebUserFacade webUserFacade;
     @EJB
     WebUserDashboardFacade webUserDashboardFacade;
@@ -116,6 +121,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     OpdTokenController opdTokenController;
     @Inject
     BookingController bookingController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -326,8 +333,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         p.setCreatedAt(new Date());
         personController.save(p);
 
+        Staff staff = new Staff();
+        staff.setPerson(p);
+        staffFacade.create(staff);
+
         WebUser wu = new WebUser();
         wu.setWebUserPerson(p);
+        wu.setStaff(staff);
         wu.setInstitution(ins);
         wu.setDepartment(dep);
         wu.setCreatedAt(new Date());
@@ -702,11 +714,23 @@ public class SessionController implements Serializable, HttpSessionListener {
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         if (l) {
+            setTheTimeout();
             return "/index1.xhtml?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
+    }
+
+    private void setTheTimeout() {
+        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        Long currentTimeOut = configOptionApplicationController.getLongValueByKey("Application Timeout in Minutes", 15l);
+        if (currentTimeOut == null || currentTimeOut < 5) {
+            currentTimeOut = 15l;
+        }
+        Long currentTimeOutInSeconds = currentTimeOut * 60;
+        String currentTimeOutInSecondsString = currentTimeOutInSeconds.toString();
+        ec.getSessionMap().put("com.sun.faces.timeout", currentTimeOutInSecondsString);
     }
 
     public String loginForChannelingTabView() {
@@ -1066,7 +1090,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     departments = listLoggableDepts(u);
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         departments = departmentController.fillAllItems();
                     }
 
@@ -1094,13 +1118,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
-                    if (webUserController.testRun) {
+                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
                     loadDashboards();

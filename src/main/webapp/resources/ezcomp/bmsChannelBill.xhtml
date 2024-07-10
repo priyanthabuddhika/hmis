@@ -17,7 +17,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <div class="posbill" style="text-align: left!important; page-break-after: always; width: 400px;" >
+        <div class="posbill" style="text-align: left!important; page-break-after: always;" >
             <div style="position: absolute; padding-left: 165px;">
                 <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
             </div>
@@ -144,26 +144,58 @@
 
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
-                    <tr>
-                        <td>
-                            <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
-                        </td>
-                        <td>
-                            <p:spacer width="10" rendered="#{cbif.feeGrossValue ne 0.0}"></p:spacer>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
-                        </td>
-                        <td>
-                            <h:outputLabel value="#{cbif.feeGrossValue}" rendered="#{cbif.feeGrossValue ne 0.0}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                </ui:repeat>
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show Bill fees with Item Name in Channel Booking Bill')}" >
+                    <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
+                        <tr>
+                            <td>
+                                <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="10" rendered="#{cbif.feeGrossValue ne 0.0}"></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{cbif.feeGrossValue}" rendered="#{cbif.feeGrossValue ne 0.0}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </h:panelGroup>
 
-                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
+                <h:panelGroup class="my-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Bill fees with Item Name in Channel Booking Bill')}">
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi"  >
+                        <tr>
+                            <td>
+                                <h:outputLabel value="#{cbi.item.name}" rendered="#{cc.attrs.bill.singleBillItem.item.name ne cbi.item.name}"></h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <ui:repeat value="#{cbi.item.itemFeesAuto}" var="cbif" >
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{cbif.name}" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <p:spacer width="10" rendered="#{cbif.fee ne 0.0}"></p:spacer>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value=":" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cbif.fee}" rendered="#{cbif.fee ne 0.0}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tr>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" class="my-2" >
                     <tr>
                         <td>
                             <h:outputLabel value="Total" ></h:outputLabel>
@@ -392,7 +424,7 @@
 
             <div style="margin-left: 6%">
                 <div style="font-size: 8pt">
-                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
+                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputLabel>
                 </div>
@@ -405,7 +437,7 @@
                         class="mx-1"
                         style="font-size: 8pt"  
                         value="#{cc.attrs.bill.paidAmount}">
-                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <h:outputText 
                         style="font-size: 8pt"  
